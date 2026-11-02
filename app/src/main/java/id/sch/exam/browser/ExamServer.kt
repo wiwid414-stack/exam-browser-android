@@ -11,9 +11,11 @@ class ExamServer : NanoHTTPD(8080) {
     @Volatile private var running = false
     @Volatile private var formUrl = ""
     @Volatile private var endAt = 0L
+    private val adminToken = java.util.UUID.randomUUID().toString()
     private val participants = Collections.synchronizedSet(linkedSetOf<String>())
 
     fun sessionCode(): String = code
+    fun hostToken(): String = adminToken
     fun participantNames(): List<String> = synchronized(participants) { participants.toList() }
 
     override fun serve(session: IHTTPSession): Response {
@@ -47,7 +49,7 @@ class ExamServer : NanoHTTPD(8080) {
                     return json(JSONObject().put("ok", true).put("message", "Berhasil bergabung"))
                 }
                 "/start" -> {
-                    if (data.optString("code") != code) return json(JSONObject().put("error", "Kode host salah"), Response.Status.FORBIDDEN)
+                    if (data.optString("adminToken") != adminToken) return json(JSONObject().put("error", "Akses pengawas ditolak"), Response.Status.FORBIDDEN)
                     val url = data.optString("url").trim()
                     val minutes = data.optInt("minutes", 60).coerceIn(1, 300)
                     if (!url.startsWith("https://") && !url.startsWith("http://")) return json(JSONObject().put("error", "URL tidak valid"), Response.Status.BAD_REQUEST)
