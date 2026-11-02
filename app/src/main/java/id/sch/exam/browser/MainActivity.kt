@@ -92,13 +92,13 @@ class MainActivity : Activity() {
             val mins = duration.text.toString().toIntOrNull()?.coerceIn(1, 300) ?: 60
             val url = form.text.toString().trim()
             io.execute {
-                val result = request("http://127.0.0.1:8080/start", JSONObject().put("code", s.sessionCode()).put("minutes", mins).put("url", url))
+                val result = request("http://127.0.0.1:8080/start", JSONObject().put("adminToken", s.hostToken()).put("minutes", mins).put("url", url))
                 runOnUiThread { status.text = result?.optString("error") ?: if (result?.optBoolean("ok") == true) "Ujian sedang berlangsung" else "Gagal memulai ujian" }
             }
         }
         button("HENTIKAN UJIAN") {
             io.execute {
-                request("http://127.0.0.1:8080/stop", JSONObject().put("code", s.sessionCode()))
+                request("http://127.0.0.1:8080/stop", JSONObject().put("adminToken", s.hostToken()))
                 runOnUiThread { status.text = "Ujian dihentikan oleh pengawas" }
             }
         }
